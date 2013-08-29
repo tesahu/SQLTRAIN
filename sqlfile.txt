@@ -1,0 +1,5 @@
+select t.tenantname
+from test1.tenantapartments ta,test1.tenants t
+where ta.tid = t.tenantid 
+group by(ta.tid) 
+having count(ta.tid) >1
