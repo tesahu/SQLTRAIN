@@ -1,3 +1,5 @@
+3)TO get a list of tenants who are renting more than one apartment
+
 select t.tenantname
 from test1.tenantapartments ta,test1.tenants t
 where ta.tid = t.tenantid 
