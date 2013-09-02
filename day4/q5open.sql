@@ -1,3 +1,5 @@
+Q.3-Get list of all buildings and no of open request for that building?
+
 select b.buildingname,ifnull(c3.n,0) "no of open request"
 from test1.buildings b left outer join 
 (select c2.abi a,sum(c2.n1) n
