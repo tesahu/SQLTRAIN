@@ -5,3 +5,232 @@ from test1.tenantapartments ta,test1.tenants t
 where ta.tid = t.tenantid 
 group by(ta.tid) 
 having count(ta.tid) >1
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class ReadMainFile {
+	public static String mainFile = "C:\\Tejeswar1\\ReadAllFileRecursively\\main.txt";
+public static void main(String[] args) throws IOException {
+	//testGetMatchedPattern();
+	
+	//testGetClassName();
+	
+	BufferedReader br = new BufferedReader(new FileReader(mainFile));
+	String line = "";
+	String fileName = "DefaultFileName";
+	//br.readLine();
+	List<String> l = new ArrayList<>();
+	while((line = br.readLine()) != null){
+		line = line.trim();
+		line = MyPasswordEncrDecr.descrypt(line);
+		if(line.startsWith(">>>>>>>>>>>>>>")){
+			fileName= line.substring(line.lastIndexOf(">")+1,line.length());
+			if(!fileName.contains(".java")){
+				while(!(line = br.readLine()).equals("==========>")){
+					if(line.contains("</CommandDefinitions>")){
+						System.out.println(line);
+					}
+				}
+				continue;
+			}
+		}
+		//if(line.contains(">>>>>>>>>>>>>>")){
+		if(line.startsWith(">>>>>>>>>>>>>>")){	
+			continue;
+		}
+		else if(line.equals("==========>")){
+			writeToFile1(fileName,l);
+			l = new ArrayList<>();
+			continue;
+		}
+		else{
+			l.add(line);
+		}
+			
+		
+		
+		
+	}
+	
+	
+}
+public static void testGetClassName(){
+	String stmt = "     public     class    Mytest   {   ";
+	getClassName(stmt);
+}
+private static void writeToFile(List<String> l) throws IOException {
+	/*We should not assume the first element of the arraylist contains the package statement.
+	 * There might me some single line comment or multiline comments as first entries in the 
+	 * Arraylist.So accordingly process your things.	 
+	 */
+	
+	String orgPckStatement = "";
+	//Traverse throught the list until we get the package statement
+	for(String pckStatement:l){
+		//pckStatement = pckStatement.trim();
+		if(pckStatement.contains("package")){
+			orgPckStatement = pckStatement;
+			break;
+		}
+	}
+	//orgPckStatement = l.get(0);
+	System.out.println("Package statement:::"+orgPckStatement);
+	orgPckStatement = getPackageName(orgPckStatement);
+	System.out.println("Original package statement:"+orgPckStatement);
+	String className = getClassName(l);
+	System.out.println("package:"+orgPckStatement);
+	
+	System.out.println("Class:"+className);
+	orgPckStatement = orgPckStatement.replaceAll("\\.", "\\\\");
+			File f = new File(orgPckStatement);
+	if (!f.exists()) {
+		f.mkdirs();
+		//f.createNewFile();
+	}
+	String fileName = orgPckStatement+"\\"+className+".java";
+	System.out.println("Filename:"+fileName);
+	File file = new File(fileName);
+	if (!file.exists()) {
+		//f.mkdirs();
+		file.createNewFile();
+	}
+	BufferedWriter bw =  new BufferedWriter(new FileWriter(file));
+	for(String stmt:l){
+	bw.write(stmt);
+	bw.newLine();
+	}
+	bw.close();
+	
+}
+private static void writeToFile1(String fileName1,List<String> l) throws IOException {
+	/*We should not assume the first element of the arraylist contains the package statement.
+	 * There might me some single line comment or multiline comments as first entries in the 
+	 * Arraylist.So accordingly process your things.	 
+	 */
+	
+	String orgPckStatement = "";
+	//Traverse throught the list until we get the package statement
+	for(String pckStatement:l){
+		//pckStatement = pckStatement.trim();
+		if(pckStatement.contains("package")){
+			orgPckStatement = pckStatement;
+			break;
+		}
+	}
+	//orgPckStatement = l.get(0);
+	System.out.println("Package statement:::"+orgPckStatement);
+	orgPckStatement = getPackageName(orgPckStatement);
+	System.out.println("Original package statement:"+orgPckStatement);
+	//String className = getClassName(l);
+	//System.out.println("package:"+orgPckStatement);
+	
+	//System.out.println("Class:"+className);
+	orgPckStatement = orgPckStatement.replaceAll("\\.", "\\\\");
+			File f = new File(orgPckStatement);
+	if (!f.exists()) {
+		f.mkdirs();
+		//f.createNewFile();
+	}
+	String fileName = "DefaultFile.java";
+	if(orgPckStatement.equals("")){
+		fileName = fileName1;
+	}
+	else{
+		fileName = orgPckStatement+"\\"+fileName1;	
+	}
+	
+	System.out.println("Filename:"+fileName);
+	File file = new File(fileName);
+	if (!file.exists()) {
+		//f.mkdirs();
+		file.createNewFile();
+	}
+	BufferedWriter bw =  new BufferedWriter(new FileWriter(file));
+	for(String stmt:l){
+	bw.write(stmt);
+	bw.newLine();
+	}
+	bw.close();
+	
+}
+
+private static String getPackageName(String pckStatement) {
+	System.out.println("pck statement===="+pckStatement);
+	String pkg = pckStatement.replaceAll("\\s+", " ");
+	try{
+	pkg = pkg.trim().split(" ")[1];
+	}catch(RuntimeException e){
+		System.out.println("Runtime exception occured:"+e.getMessage());
+		return "";
+	}
+			return pkg.substring(0, pkg.length()-1);
+	
+}
+private static String getClassName(List<String> l) {
+	String classNameRegex = "class(.*?)(?=[{|\n*])";
+	String classLine = "";
+	for(String line :l){
+		if(line.contains("public") && (line.contains("class ")||line.contains("interface"))){
+			classLine = line;
+		break;
+		}
+		//This else block is added bcoz some class name might be like "public class StudentInfo" or might be like "class StudentInfo"
+		else if(line.contains("class ")||line.contains("interface")){
+			classLine = line;
+			break;
+		}
+	}
+	System.out.println("Line to be matched:"+classLine);
+	//return getMatchedPattern(classNameRegex,classLine,1);
+	return getClassName(classLine);
+	//return "DefaultClass";
+}
+
+public static String getMatchedPattern(String regex,String line,int groupNo){
+	//System.out.println("Line to be matched:"+line);
+	String matchedContent = "DefaultMatchedContent";
+	Pattern pattern = Pattern.compile(regex);
+	Matcher matcher = pattern.matcher(line);
+	if(matcher.find()) {
+		matchedContent = matcher.group(groupNo);
+	}
+	return matchedContent.trim();
+}
+public static String getClassName(String line1){
+	//line1 = DataCollectionWorker<T>
+	String className = "DefaultClassName";
+	String line = line1.replaceAll("\\s+", " ");
+	line = line.trim();
+	String[] lines =line.split("\\s") ;
+	//String[] split = line.split(" ");
+	if(line.contains("public")){
+		className = lines[2];
+	}
+	else{
+		className =lines[1];
+	}
+	if(className.contains("<")){
+		className = className.substring(0, className.indexOf('<'));
+	}
+	System.out.println("Classname is:"+className);
+	return className;
+}
+public static void testGetMatchedPattern(){
+	String classNameRegex = "class(.*?)(?=[{])";
+	//String classNameRegex = "class\\s?(.*?)\\s?";
+	String line = "public class MyTest";
+	
+	String className = getMatchedPattern(classNameRegex,line,1);
+	System.out.println("ClassName :::"+className);
+	
+}
+
+}
